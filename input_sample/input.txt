@@ -1,0 +1,7 @@
+nspecies 3
+species_name Ti O N
+species_num 12 16 20 
+spacegroup 230
+originchoice 1
+
+selectone True

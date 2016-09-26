@@ -1,0 +1,22 @@
+nspecies 2
+species_name Si O
+species_num 4 8
+#spacegroup 225
+spacegroup 143
+#spacegroup 16
+#spacegroup 2
+originchoice 1
+a 10.
+b 11.
+c 12.
+cosa 0
+cosb 0
+cosc 0
+
+#selectone true
+randomseed auto
+
+#write_detail .true.
+
+
+#latinfo_only true
