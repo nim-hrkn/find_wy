@@ -77,14 +77,19 @@ class find_wy:
 
                 return data
 
-	def get_positions(self,a,b,c,alpha,beta,gamma, species_name, species_num):
+	def get_positions(self,a,b,c,alpha,beta,gamma, species_name, species_num, randomseed="auto"):
 		self.prog="find_wy"
                 if  "FIND_WY" in  os.environ:
                         self.prog= os.environ["FIND_WY"]
 
+		if randomseed=="auto":
+			seed="auto"
+		else:
+			seed=str(randomseed)
+
                 dic={ "spacegroup": str(self.spacegroup),
                         "orginchoice" : str(self.iorigin),
-                        "randomseed" : "auto", 
+                        "randomseed" : seed, 
 			"a" : str(a), 
 			"b" : str(b), 
 			"c" : str(c), 
@@ -154,59 +159,8 @@ class find_wy:
 			print "failed to run '",cmd,"'"
 			print "return code=", ret 
 			subprocess.call ( "cat e", shell=True) 
+			print "You can use FIND_WY environmental variable"
 			sys.exit(200)
 
-if __name__ == "__main__":
-
-	fw=find_wy(143)
-	lat=fw.lat_info()
-	print lat
-
-	species_name=["Si", "O"]
-	species_num=[4, 8]
-
-
-	latlen_max=np.array([10,11,12])
-	a=np.random.rand()*latlen_max[0]
-	if lat["b"]=="a":
-		b=a
-	elif lat["b"]=="0":
-		b=np.random.rand()*latlen_max[1]
-	else:
-		print "unknown character for b", lat["b"]
-		sys.exit(500)
-
-	if lat["c"]=="a":
-		b=a
-	elif lat["c"]=="b":
-		c=b
-	elif lat["c"]=="0":
-		c=np.random.rand()*latlen_max[2]
-	else:
-		print "unknown character for c",lat["c"]
-	
-	if lat["alpha"]==0:
-		alpha=np.random.rand()*120.0 # e.g.
-	else:
-		alpha=lat["alpha"]
-
-	if lat["beta"] ==0 :
-		beta= np.random.rand()*120.0 # e.g.
-	else:
-		beta=lat["beta"]
-
-	if lat["gamma"] ==0 :
-		gamma= np.random.rand()*120.0 # e.g.
-	else:
-		gamma=lat["gamma"]
-
-	# set seed if you want to make the same series of random numbers
-	#seed=100
-	#np.random(seed)
-		
-	print a,b,c,alpha,beta,gamma,species_name,species_num
-	rskel,r=fw.get_positions( a,b,c,alpha,beta,gamma,species_name,species_num )
-	print  rskel
-	print r
 
 

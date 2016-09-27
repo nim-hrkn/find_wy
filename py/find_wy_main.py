@@ -60,15 +60,16 @@ if __name__ == "__main__":
 	print lat
 
 	#set seed if you want to make the same series of random numbers to make lat 
-	#seed=100
-	#np.random(seed)
+	seed=100
+	np.random.seed(seed)
+
 	a,b,c,alpha,beta,gamma = set_lat(lat) 
 
 	species_name=["Si", "O"]
 	species_num=[4, 8]
 		
 	print a,b,c,alpha,beta,gamma,species_name,species_num
-	rskel,r=fw.get_positions( a,b,c,alpha,beta,gamma,species_name,species_num )
+	rskel,r=fw.get_positions( a,b,c,alpha,beta,gamma,species_name,species_num ,randomseed=seed)
 	print  rskel
 	print r
 
