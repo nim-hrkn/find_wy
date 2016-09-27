@@ -151,6 +151,7 @@ implicit none
     class(t_combination),intent(in):: add
     if (self%num==0) then 
        self%num=add%num ! 原子数はコピー元の値に 
+       write(6,*)'combination_append_combi: set num=',self%num
     else
        if (self%num/=add%num) then 
           !          もともと値を持っていたら同じ数であることをかくにん
@@ -194,6 +195,9 @@ implicit none
     implicit none
     class(t_combination):: self
     integer,intent(in):: n1
+    self%num=0
+    if (allocated(self%dup)) deallocate(self%dup)
+    if (allocated(self%special)) deallocate(self%special)
     call self%list%init(n1,title="combination")
   end subroutine combination_init
 
