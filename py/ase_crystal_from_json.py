@@ -35,7 +35,11 @@ if __name__ == '__main__':
         #                       spacegroup=191,
         #                       cellpar=[a, a, c, 90, 90, 120])
 
-	lat=crystal(data["elements"],basis=data["positions"],spacegroup=data["id"],cellpar=data["lat"])
+	atoms=data["atoms"]
+	elements=[ x["name"] for x in atoms ]
+	positions= [ x["frac"] for x in atoms ]
+
+	lat=crystal(elements,basis=positions,spacegroup=data["spacegroupid"],cellpar=data["lat"])
 
 #        print lat
 
