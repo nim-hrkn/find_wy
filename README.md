@@ -9,3 +9,5 @@ inputfile = input\_si2o4.txt
 
 # Check Wiki of this code.
 
+py/ directory contains python script examples. 
+They accepts both python2 and python3. 
