@@ -7,5 +7,5 @@
 
 inputfile = input\_si2o4.txt 
 
-Check Wiki of this code.
+# Check Wiki of this code.
 

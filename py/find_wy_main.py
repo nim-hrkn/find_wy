@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 
 import os
 import sys
@@ -23,7 +24,7 @@ def set_lat(lat):
 	elif lat["b"]=="0":
 		b=np.random.rand()*latlen_max[1]
 	else:
-		print "unknown character for b", lat["b"]
+		print("unknown character for b", lat["b"])
 		sys.exit(500)
 
 	if lat["c"]=="a":
@@ -33,7 +34,7 @@ def set_lat(lat):
 	elif lat["c"]=="0":
 		c=np.random.rand()*latlen_max[2]
 	else:
-		print "unknown character for c",lat["c"]
+		print("unknown character for c",lat["c"])
 	
 	if lat["alpha"]==0:
 		alpha=np.random.rand()*120.0 # e.g.
@@ -57,7 +58,7 @@ if __name__ == "__main__":
 	#fw=find_wy.find_wy(100) # error
 	fw=find_wy.find_wy(143)
 	lat=fw.lat_info()
-	print lat
+	print(lat)
 
 	#set seed if you want to make the same series of random numbers to make lat 
 	seed=100
@@ -68,9 +69,9 @@ if __name__ == "__main__":
 	species_name=["Si", "O"]
 	species_num=[4, 8]
 		
-	print a,b,c,alpha,beta,gamma,species_name,species_num
+	print(a,b,c,alpha,beta,gamma,species_name,species_num)
 	rskel,r=fw.get_positions( a,b,c,alpha,beta,gamma,species_name,species_num ,randomseed=seed)
-	print  rskel
-	print r
+	print(rskel)
+	print(r)
 
 
