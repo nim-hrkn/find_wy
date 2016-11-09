@@ -210,6 +210,7 @@ contains
             specialpos,nspecies,num_atoms,prm%rand_iter_max)
     call write_a_position(tsp,select,specie_atoms,nspecies,&
             select%info, write_wy_skel=10, write_wy=20 , write_wy_json=30, write_wy_skel_json=40, &
+           write_wy_skel_all_json=50, &
            write_detail=prm%write_detail)
 
 #else
@@ -446,7 +447,8 @@ contains
 
   !-----------------------------------
   subroutine write_a_position(tsp,select,specie_atoms,nspecies,info,&
-       write_wy_skel, write_wy, write_detail , write_wy_skel_json,write_wy_json)
+       write_wy_skel, write_wy, write_detail , write_wy_skel_json,write_wy_json,&
+       write_wy_skel_all_json)
     use m_tsp
     use m_select
     use m_xyz1
@@ -459,10 +461,12 @@ contains
     character(len_specie_name):: specie_atoms(:)
     integer:: nspecies
     integer:: info(nspecies)
-    integer,optional ::  write_wy_skel, write_wy, write_wy_skel_json,write_wy_json
+    integer,optional ::  write_wy_skel, write_wy, write_wy_skel_json,write_wy_json, &
+       write_wy_skel_all_json
     logical,optional:: write_detail
 
-    integer :: l_write_wy_skel, l_write_wy, l_write_wy_skel_json, l_write_wy_json
+    integer :: l_write_wy_skel, l_write_wy, l_write_wy_skel_json, l_write_wy_json, &
+      l_write_wy_skel_all_json
     !    integer:: l_choicenumber
     logical:: l_write_detail
 
@@ -483,6 +487,7 @@ contains
     character(20):: file_pos_wy_skel='POS_WY_SKEL'
     character(20):: file_pos_wy_json='POS_WY.json'
     character(20):: file_pos_wy_skel_json='POS_WY_SKEL.json'
+    character(20):: file_pos_wy_skel_all_json='POS_WY_SKEL_ALL.json'
 
     character(18)::thisfunc='write_a_position: '
 
@@ -494,7 +499,8 @@ contains
     if (present(write_wy_skel_json)) l_write_wy_skel_json=write_wy_skel_json
     l_write_wy_json=0
     if (present(write_wy_json)) l_write_wy_json=write_wy_json
-
+    l_write_wy_skel_all_json=0
+    if (present(write_wy_skel_all_json)) l_write_wy_skel_all_json = write_wy_skel_all_json
 
     l_write_detail=.True.
     if (present(write_detail)) l_write_detail=write_detail
@@ -511,10 +517,15 @@ contains
     if (l_write_wy_skel_json>0) then 
        open(l_write_wy_skel_json,file=file_pos_wy_skel_json,status="unknown",action="write")
     endif
+    if (l_write_wy_skel_all_json>0) then
+       open(l_write_wy_skel_all_json,file=file_pos_wy_skel_all_json,status="unknown",action="write")
+    endif
+
 
 
     write(6,*)thisfunc,'l_write_wy_skel,l_write_wy,l_write_detail=', l_write_wy_skel,l_write_wy,l_write_detail
     write(6,*)thisfunc,'l_write_wy_skel_json,l_write_wy_json=', l_write_wy_skel_json,l_write_wy_json
+    write(6,*)thisfunc,'l_write_wy_skel_all_json=', l_write_wy_skel_all_json
 
     call atoms_w_wy%init(1)
     if (l_write_detail) &
@@ -544,6 +555,32 @@ contains
     write(l_write_wy_skel_json,*)'"lat" : [',tsp%a_len,',',tsp%b_len,',',tsp%c_len,',',alpha,',',beta,',',gamma ,'],'
     write(l_write_wy_skel_json,*) '"atoms" : ['
 
+    write(l_write_wy_skel_all_json,*) '{'
+    write(l_write_wy_skel_all_json,*)'"spacegroupid" : ',tsp%id,","
+    write(l_write_wy_skel_all_json,*)'"originchoice" : ',tsp%iorigin,","
+    write(l_write_wy_skel_all_json,*)'"lat" : [',tsp%a_len,',',tsp%b_len,',',tsp%c_len,',',alpha,',',beta,',',gamma ,'],'
+    write(l_write_wy_skel_all_json,*)'"primitivevector" : ['
+    do i=1,3
+        if (i==3) then
+            write(l_write_wy_skel_all_json,'("[",F20.10,",",F20.10,",",F20.10,"]")') tsp%primitivevector(:,i)
+        else
+            write(l_write_wy_skel_all_json,'("[",F20.10,",",F20.10,",",F20.10,"],")') tsp%primitivevector(:,i)
+        endif
+    enddo
+    write(l_write_wy_skel_all_json,*)'],'
+
+    write(l_write_wy_skel_all_json,*)'"conventionalvector" : ['
+    do i=1,3
+        if (i==3) then
+            write(l_write_wy_skel_all_json,'("[",F20.10,",",F20.10,",",F20.10,"]")') tsp%conventionalvector(:,i)
+        else
+            write(l_write_wy_skel_all_json,'("[",F20.10,",",F20.10,",",F20.10,"],")') tsp%conventionalvector(:,i)
+        endif
+    enddo
+    write(l_write_wy_skel_all_json,*)'],'
+
+    write(l_write_wy_skel_all_json,*) '"atoms" : ['
+
    do ispecie=1,nspecies
        i=info(ispecie)
        k=select%combisum%combi_eachspecie(ispecie)%list%size1(i)
@@ -568,6 +605,7 @@ contains
 !!!
 !!! make wycoff positions
 !!!
+          write(l_write_wy_skel_all_json,*) '['
        do l=1,lmax
           write(6,*)'l,lmax=',l,lmax
           ip= select%combisum%combi_eachspecie(ispecie)%list%v(l,i)
@@ -587,6 +625,7 @@ contains
              write( l_write_wy, '(a,3(F20.10,1x))' ) "#rand=",xyz
           endif
           !             endif
+          write(l_write_wy_skel_all_json,*) '['
           do isit=1,nsite_in_iwp
              write(6,601)thisfunc//'atom> ',specie_atoms(ispecie),tsp%wy(ip)%sitemultiplicity,wychar,&
                   l,isit,(xyzch(xyzwm(k,isit)), (jam(j,k,isit),j=1,2),k=1,3),&
@@ -639,13 +678,51 @@ contains
                 endif
              endif
 
+             if ( l_write_wy_skel_all_json>0 ) then
+                do k=1,3
+                  jam_real(k)= real(jam(1,k,isit),kind=8)/real(jam(2,k,isit),kind=8)
+                enddo
+                write(l_write_wy_skel_all_json,*) '{"name":"',trim(specie_atoms(ispecie)),'", "mul":',tsp%wy(ip)%sitemultiplicity,&
+                   ',"wy":"',trim(wychar),'",'
+                do k=1,3
+                   str(k)=adjustl(xyzch(xyzwm(k,isit)))
+                enddo
+                write(l_write_wy_skel_all_json,*) &
+                   '"xyzch": ["',trim(str(1)),'","',trim(str(2)),'","',trim(str(3)),'"],'
+                write(l_write_wy_skel_all_json,*) &
+                   '"add": [',  jam_real(1),",",jam_real(2),",",jam_real(3),'], "num_uniqvar":',num_uniqvar
 
+             endif
+
+              if (isit==nsite_in_iwp ) then
+                 write(l_write_wy_skel_all_json,*) '}'
+             else
+                 write(l_write_wy_skel_all_json,*) '},'
+             endif
+ 
              !                endif
-          enddo
+         enddo
+
+               if (l==lmax) then
+                   write(l_write_wy_skel_all_json,*) ']'
+                else
+                   write(l_write_wy_skel_all_json,*) '],'
+                endif
+
 
        enddo
 
+          if (ispecie==nspecies) then
+              write( l_write_wy_skel_all_json,*) ']'
+          else
+              write( l_write_wy_skel_all_json,*) '],'
+          endif
+
+
+
     enddo
+
+
     write(6,*) thisfunc
 
 
@@ -653,6 +730,7 @@ contains
     if ( l_write_wy_json>0) write(l_write_wy_json,*)'}'
     if ( l_write_wy_skel_json>0) write(l_write_wy_skel_json,*)']'
     if ( l_write_wy_skel_json>0) write(l_write_wy_skel_json,*)'}'
+    if ( l_write_wy_skel_all_json>0) write(l_write_wy_skel_all_json,*)'] }'
 
 
     if (l_write_wy_skel>0) then; close(l_write_wy_skel) ; write(6,*)thisfunc,file_pos_wy_skel,'is made.'; endif
