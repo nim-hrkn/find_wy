@@ -19,22 +19,28 @@ def conversion(data,clat):
                 for each in data2:    
                     val=[]
                     for i,ch in enumerate(each["xyzch"]):
-                        if ch=="0":
+			if ch=="-2x":
+                                val.append(-2.0*rval[0])
+                        elif ch=="-x+y":
+                                val.append(-rval[0]+rval[1])
+                        elif ch=="-z":
+                                val.append(-rval[2])
+                        elif ch=="-y":
+                                val.append(-rval[1])
+                        elif ch=="-x":
+                                val.append(-rval[0])
+                        elif ch=="0":
                                 val.append(0.0)
                         elif ch=="x":
                                 val.append(rval[0])
-                        elif ch=="2x":
-                                val.append(2.0*rval[0])
-                        elif ch=="-2x":
-                                val.append(-2.0*rval[0])
-                        elif ch=="x-y":
-                                val.append(rval[0]-rval[1])
-                        elif ch=="-x+y":
-                                val.append(-rval[0]+rval[1])
                         elif ch=="y":
                                 val.append(rval[1])
                         elif ch=="z":
                                 val.append(rval[2])
+                        elif ch=="x-y":
+                                val.append(rval[0]-rval[1])
+                        elif ch=="2x":
+                                val.append(2.0*rval[0])
                         else:
                                 print("conversion, internal error")
                                 print("unknown ch=",ch)
