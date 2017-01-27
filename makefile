@@ -19,11 +19,13 @@ ALL:
 	(cd select; make)
 	make  all 
 
-all: find_wy findsite
+all: find_wy findsite write1wy
 
 find_wy: find_wy.o m_tsp.o  m_wycoff.o  m_gn_ka.o  $(SELECT)   keyvaluev3.o  m_util.o  m_vector_c2.o  m_vector_r2.o  m_vector_t_xyz1.o m_fixedparam.o  m_xyz1.o  m_json_write.o 
 	$(FC) -o $@  $^ $(TSP)
 findsite: findsite_main.o m_tsp.o  m_wycoff.o  m_gn_ka.o 
+	$(FC) -o $@  $^ $(TSP) 
+write1wy: write1wy.o m_tsp.o  m_wycoff.o  m_gn_ka.o 
 	$(FC) -o $@  $^ $(TSP) 
 
 m_json_write.o: m_xyz1.o 

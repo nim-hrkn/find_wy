@@ -28,6 +28,7 @@ module m_tsp
 
 #ifdef USE_GEN
      integer::file_out=0
+     integer::file_out_json=151
 #else
      integer::file_generator=3, file_wycoff=4,file_out=0
 #endif
@@ -532,7 +533,8 @@ contains
    write(fid,*)'"c":"', bc_def(self%tc_len),'",'
    write(fid,*)'"alpha": ',ang_def(self%tcosa),","
    write(fid,*)'"beta" : ',ang_def(self%tcosb),","
-   write(fid,*)'"gamma": ',ang_def(self%tcosc)
+   write(fid,*)'"gamma": ',ang_def(self%tcosc),","
+   write(fid,*)'"latticetype": "',trim(self%latticetype),'"'
    write(fid,*)'}'
    close(fid)
   end subroutine tsp_write_json
@@ -634,19 +636,34 @@ contains
     if (self%file_out>0) &
          write(self%file_out,'(a,1x,I3)') 'nwycoff',self%nwycoff
     write(6,*)thisfunc,'wycoff representative positions'
+    if (self%file_out_json>0) &
+       write(self%file_out_json,'(a)') ' "wy": ['
     do  iwp=1,self%nwycoff
        if (self%file_out>0) &
             write(self%file_out,'(I3,L2,I4,I3,A2)') iwp,self%wy(iwp)%specialpos,&
             self%wy(iwp)%primitivesitemultiplicity, &
             self%wy(iwp)%sitemultiplicity,self%wy(iwp)%sitecharacter
 
+       if (self%file_out_json>0) &
+            write(self%file_out_json,'(a,L1,a, a,I4,a,a,I4,a,a)')  &
+               '{"special":"',self%wy(iwp)%specialpos,'",',&
+               '"pmul":', self%wy(iwp)%primitivesitemultiplicity,",", &
+            '"mul":',self%wy(iwp)%sitemultiplicity,",", &
+            '"wyc":"'//self%wy(iwp)%sitecharacter//'"}'
+           if (iwp/=self%Nwycoff) &
+                write(self%file_out_json,'(a)') ','
+
+
        write(6,600) thisfunc//'W',iwp,self%wy(iwp)%specialpos,&
             self%wy(iwp)%primitivesitemultiplicity, &
             self%wy(iwp)%sitemultiplicity,self%wy(iwp)%sitecharacter &
             ,(xyzch(self%wy(iwp)%xyz(k)),(self%wy(iwp)%shift(j,k),j=1,2),k=1,3)
 
+
     enddo
 600 format(a,i5,L2,2i5,a1,1x,3(a4,'+',i2,'/',i1))
+    if (self%file_out_json>0) &
+       write(self%file_out_json,'(a)') '] '
 
 #if 0
     write(6,*)thisfunc,'sitemultiplicity and special positions'
@@ -674,7 +691,10 @@ contains
     integer xyzwm(3,48),jam(2,3,48)
     character(23)::thisfunc='tsp_write_wycoff_equiv:'
 
-    if (self%wy(iwp)%specialpos) return
+    character(10):: str(3)
+    real(8):: jam_real(3)
+
+!    if (self%wy(iwp)%specialpos) return
 
     if (iwp<1 .or. iwp>self%nwycoff) then 
        write(6,*)thisfunc,'iwp range error'
@@ -705,6 +725,28 @@ contains
     do isit=1,nsite_in_iwp
        write(6,601) thisfunc//'Q',isit,(xyzch(xyzwm(k,isit)), (jam(j,k,isit),j=1,2),k=1,3)
     enddo
+! json 
+    if (self%file_out_json>0) then
+    write(self%file_out_json,*)'['
+    do isit = 1,nsite_in_iwp
+      do k=1,3
+        jam_real(k)= real(jam(1,k,isit),kind=8)/real(jam(2,k,isit),kind=8)
+      enddo
+      do k=1,3
+         str(k)=adjustl(xyzch(xyzwm(k,isit)))
+      enddo
+      write(self%file_out_json,*)'{'
+      write(self%file_out_json,*) &
+         '"xyzch": ["',trim(str(1)),'","',trim(str(2)),'","',trim(str(3)),'"],'
+      write(self%file_out_json,*) &
+         '"add": [',  jam_real(1),",",jam_real(2),",",jam_real(3),']'
+      write(self%file_out_json,*)'}'
+      if (isit/=nsite_in_iwp) then 
+         write(self%file_out_json,*)','
+      endif
+    enddo
+    write(self%file_out_json,*)']'
+    endif 
     if (nsite_in_iwp*self%iz/=self%wy(iwp)%sitemultiplicity) then
        write(6,*)thisfunc,'internal error, nsite,iz/=sitemultiplicity'
        write(6,*) thisfunc,'iz=',self%iz
