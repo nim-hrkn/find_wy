@@ -29,6 +29,7 @@ module m_tsp
 #ifdef USE_GEN
      integer::file_out=0
      integer::file_out_json=151
+     integer::file_out_lat_json=152
 #else
      integer::file_generator=3, file_wycoff=4,file_out=0
 #endif
@@ -89,6 +90,7 @@ module m_tsp
      procedure:: set_lattice => tsp_set_lattice
      procedure:: set_primitivevector => tsp_set_primitivevector
      procedure:: set_conventionalvector => tsp_set_conventionalvector
+     procedure:: write_tv_json => tsp_write_tv_json
      procedure:: write_json => tsp_write_json
      procedure:: gettable => tsp_gettable
 
@@ -410,9 +412,48 @@ contains
        write(6,'(a)',advance='no') thisfunc
        write(6,'(1H[,3F10.5,1x,1H])') self%primitivevector
 
+       call self%write_tv_json ("LATreal.json") 
+
     endif
 
   end subroutine tsp_set_lattice
+
+  subroutine  tsp_write_tv_json(self,filename)
+    implicit none
+    class(t_tsp):: self
+    character(*) :: filename
+    integer:: fid , i,j 
+
+   if (self%file_out_lat_json>0) then
+
+      fid = self%file_out_lat_json
+      open(fid,file=filename,status="unknown")
+      write(fid,*) '{'
+    write(fid,*)'"primitivevector" : ['
+    do i=1,3
+        if (i==3) then
+            write(fid,'("[",F20.10,",",F20.10,",",F20.10,"]")') self%primitivevector(:,i)
+        else
+            write(fid,'("[",F20.10,",",F20.10,",",F20.10,"],")') self%primitivevector(:,i)
+        endif
+    enddo
+    write(fid,*)'],'
+
+    write(fid,*)'"conventionalvector" : ['
+    do i=1,3
+        if (i==3) then
+            write(fid,'("[",F20.10,",",F20.10,",",F20.10,"]")') self%conventionalvector(:,i)
+        else
+            write(fid,'("[",F20.10,",",F20.10,",",F20.10,"],")') self%conventionalvector(:,i)
+        endif
+    enddo
+    write(fid,*)']'
+    write(fid,*)'}'
+    close(fid)
+
+   endif
+
+  end subroutine  tsp_write_tv_json
 
   !------------------------------------------------------
   ! self%convenionalvectorからangleの計算
@@ -518,6 +559,8 @@ contains
    character(2):: ang_def(0:11)
 
    character(10)::filename='LAT.json'
+   character(10)::filename_json='LATreal.json'
+   integer:: i,j 
 
    fid=100
    open(fid,file=filename,status='unknown')
@@ -537,6 +580,36 @@ contains
    write(fid,*)'"latticetype": "',trim(self%latticetype),'"'
    write(fid,*)'}'
    close(fid)
+
+#if 0
+   if (self%file_out_lat_json>0) then
+
+      fid = self%file_out_lat_json
+      open(fid,file=filename_json,status="unknown")
+      write(fid,*) '{'
+    write(fid,*)'"primitivevector" : ['
+    do i=1,3
+        if (i==3) then
+            write(fid,'("[",F20.10,",",F20.10,",",F20.10,"]")') self%primitivevector(:,i)
+        else
+            write(fid,'("[",F20.10,",",F20.10,",",F20.10,"],")') self%primitivevector(:,i)
+        endif
+    enddo
+    write(fid,*)'],'
+
+    write(fid,*)'"conventionalvector" : ['
+    do i=1,3
+        if (i==3) then
+            write(fid,'("[",F20.10,",",F20.10,",",F20.10,"]")') self%conventionalvector(:,i)
+        else
+            write(fid,'("[",F20.10,",",F20.10,",",F20.10,"],")') self%conventionalvector(:,i)
+        endif
+    enddo
+    write(fid,*)']'
+    close(fid)
+
+   endif 
+#endif
   end subroutine tsp_write_json
 
   !------------------------------------------------------
@@ -633,6 +706,8 @@ contains
     class(t_tsp)::self
     integer:: iwp,j,k
     character(18)::thisfunc='tsp_write_wycoff:'
+    real(8):: jam_real(8)
+    character(50) :: str(3)
     if (self%file_out>0) &
          write(self%file_out,'(a,1x,I3)') 'nwycoff',self%nwycoff
     write(6,*)thisfunc,'wycoff representative positions'
@@ -644,14 +719,28 @@ contains
             self%wy(iwp)%primitivesitemultiplicity, &
             self%wy(iwp)%sitemultiplicity,self%wy(iwp)%sitecharacter
 
-       if (self%file_out_json>0) &
-            write(self%file_out_json,'(a,L1,a, a,I4,a,a,I4,a,a)')  &
+       if (self%file_out_json>0) then
+
+      do k=1,3
+        jam_real(k)= real(self%wy(iwp)%shift(1,k),kind=8)/& 
+          real(self%wy(iwp)%shift(2,k),kind=8)
+      enddo
+      do k=1,3
+         str(k)=adjustl(xyzch(self%wy(iwp)%xyz(k)))
+      enddo
+
+            write(self%file_out_json,'(a,L1,a, a,I4,a, a,I4,a, a,a)')  &
                '{"special":"',self%wy(iwp)%specialpos,'",',&
                '"pmul":', self%wy(iwp)%primitivesitemultiplicity,",", &
             '"mul":',self%wy(iwp)%sitemultiplicity,",", &
-            '"wyc":"'//self%wy(iwp)%sitecharacter//'"}'
+            '"wyc":"'//self%wy(iwp)%sitecharacter//'",',  &
+            '"xyzch":["'//trim(str(1))//'","'//trim(str(2))//'","'//trim(str(3))//'"],' 
+            write(self%file_out_json,*)  &
+         '"add": [',  jam_real(1),",",jam_real(2),",",jam_real(3),']'
+            write(self%file_out_json,*) "}"
            if (iwp/=self%Nwycoff) &
                 write(self%file_out_json,'(a)') ','
+       endif 
 
 
        write(6,600) thisfunc//'W',iwp,self%wy(iwp)%specialpos,&

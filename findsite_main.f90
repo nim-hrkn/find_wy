@@ -44,6 +44,7 @@ contains
           call tsp%read_wycoff_equiv ()
           call tsp%set_lattice(0)
 
+          write(6,*) 'nwycoff=', tsp%nwycoff
           ! write wycoff position
           call tsp%write_wycoff
 

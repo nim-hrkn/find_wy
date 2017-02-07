@@ -18,6 +18,8 @@ program test
   type t_param
      character(10):: mode
      integer:: spcid=0, choice=0
+     real(8):: a_len=0.0d0,b_len=0.0d0,c_len=0.0d0,cosa=0.0d0,cosb=0.0d0,cosc=0.0d0
+
   end type t_param
   call main
 
@@ -30,6 +32,7 @@ contains
 
     integer :: narg, iarg
     character(100):: arg
+    real(8) :: pi ,angle 
    
     integer:: COMMAND_ARGUMENT_COUNT
 
@@ -46,6 +49,32 @@ contains
         iarg=3
          call GET_COMMAND_ARGUMENT(iarg, arg)
          read(arg,*) param%choice
+
+         iarg= iarg+1
+         call GET_COMMAND_ARGUMENT(iarg, arg)
+         write(*,*) "arg=",iarg,"(",trim(arg),")"
+         read(arg,*) param%a_len 
+         iarg= iarg+1
+         call GET_COMMAND_ARGUMENT(iarg, arg)
+         read(arg,*) param%b_len 
+         iarg= iarg+1
+         call GET_COMMAND_ARGUMENT(iarg, arg)
+         read(arg,*) param%c_len 
+
+         pi = atan(1.0d0) * 4.0 
+         iarg= iarg+1
+         call GET_COMMAND_ARGUMENT(iarg, arg)
+         read(arg,*) angle 
+         param%cosa = cos( angle /180.0d0 * pi ) 
+         iarg= iarg+1
+         call GET_COMMAND_ARGUMENT(iarg, arg)
+         read(arg,*) angle
+         param%cosb = cos( angle /180.0d0 * pi )
+         iarg= iarg+1
+         call GET_COMMAND_ARGUMENT(iarg, arg)
+         read(arg,*) angle
+         param%cosc = cos( angle /180.0d0 * pi )
+
 
   end subroutine get_arg
   subroutine show_arg(param)
@@ -98,6 +127,18 @@ contains
           call tsp%read_wycoff()
           call tsp%read_wycoff_equiv ()
           call tsp%set_lattice(0)
+          if (param%a_len /= 0.0d0 ) then 
+
+       tsp%a_len=param%a_len
+       tsp%b_len=param%b_len
+       tsp%c_len=param%c_len
+       tsp%cosa=param%cosa
+       tsp%cosb=param%cosb
+       tsp%cosc=param%cosc
+
+       call tsp%set_lattice(work=1)
+
+          endif
 
           call tsp%write_json()
 
