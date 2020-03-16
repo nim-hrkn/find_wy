@@ -15,6 +15,14 @@ They accepts both python2 and python3.
 
 # important!
 
-Download tsp98.f and prmtsp.f from http://aquarius.mp.es.osaka-u.ac.jp/~tspace/tspace_main/index.html
+modified tsp98 is necessary. First download
+https://github.com/nim-hrkn/m_tspace
+It uses tsp98. 
+
+##  tsp98 
+
+You must also download tsp98.f and prmtsp.f from 
+[http://phoenix.mp.es.osaka-u.ac.jp/~tspace/tspace_main/tsp07/tsp98.f](http://phoenix.mp.es.osaka-u.ac.jp/~tspace/tspace_main/tsp07/tsp98.f), and 
+[http://phoenix.mp.es.osaka-u.ac.jp/~tspace/tspace_main/tsp07/prmtsp.f](http://phoenix.mp.es.osaka-u.ac.jp/~tspace/tspace_main/tsp07/prmtsp.f).
 
 I can't put it on this directory because the author of tspace doesn't make the license problem clear. 
